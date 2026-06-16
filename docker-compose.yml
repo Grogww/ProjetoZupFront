@@ -1,0 +1,24 @@
+# Sobe APENAS o frontend ZUP X. O backend (ProjetoZup) roda separadamente
+# (na sua máquina ou em outro host). Ajuste BACKEND_URL conforme onde ele está.
+#
+#   docker compose up --build
+#   -> front em http://localhost:8080  (proxy de /api -> BACKEND_URL)
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: zup-frontend
+    container_name: zup-frontend
+    ports:
+      - "8080:80"
+    environment:
+      # Backend ProjetoZup. Exemplos:
+      #   http://host.docker.internal:3000  -> back rodando na máquina host
+      #   http://back:3000                  -> back como serviço no mesmo compose
+      BACKEND_URL: http://host.docker.internal:3000
+    extra_hosts:
+      # Garante a resolução de host.docker.internal fora do Docker Desktop.
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

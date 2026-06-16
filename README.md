@@ -77,6 +77,43 @@ O front foi adequado para falar com o contrato real dessa API (status, taxonomia
 
 ---
 
+## 🐳 Docker
+
+O frontend pode rodar em container de forma **totalmente desacoplada do backend**. A imagem é genérica: o bundle chama `/api` (caminho relativo) e um **Nginx** dentro do container faz **proxy reverso** dessas chamadas para o backend real. Vantagens:
+
+- A **mesma imagem** roda em qualquer ambiente — o endereço do back é definido em runtime pela variável `BACKEND_URL`, sem rebuildar.
+- **Sem CORS**, pois para o navegador front e API ficam na mesma origem.
+- Servir estático com Nginx resolve o **fallback de SPA** (recarregar `/mapa`, `/gestao` etc. não dá 404).
+
+### Subir com docker compose (recomendado)
+
+```bash
+docker compose up --build
+```
+Front em **http://localhost:8080**. Ajuste o backend no `docker-compose.yml` (variável `BACKEND_URL`):
+
+```yaml
+environment:
+  BACKEND_URL: http://host.docker.internal:3000   # back rodando na máquina host
+```
+
+### Subir só com docker
+
+```bash
+docker build -t zup-frontend .
+docker run -p 8080:80 -e BACKEND_URL=http://host.docker.internal:3000 zup-frontend
+```
+
+| Variável (container) | Padrão | Descrição |
+| --- | --- | --- |
+| `BACKEND_URL` | `http://host.docker.internal:3000` | Origem do backend ProjetoZup (**sem** o `/api` no final). O Nginx repassa `/api/...` para lá. |
+
+> **Importante:** `BACKEND_URL` aponta **sem** o sufixo `/api` (ex.: `http://host.docker.internal:3000`). O Nginx preserva o caminho `/api/...` da requisição ao repassar. Use `host.docker.internal` quando o back roda na sua máquina; use o nome do serviço (ex.: `http://back:3000`) se ambos estiverem no mesmo compose.
+
+**Arquivos relacionados:** [`Dockerfile`](Dockerfile) (build multi-stage Node 20 → Nginx), [`nginx.conf`](nginx.conf) (proxy `/api` + fallback SPA), [`docker-compose.yml`](docker-compose.yml) e [`.dockerignore`](.dockerignore).
+
+---
+
 ## ⚙️ Configuração
 
 | Variável | Obrigatória | Descrição |

@@ -1,0 +1,20 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+# Não vaza o .env de desenvolvimento para dentro da imagem.
+# A URL da API é definida no build (VITE_API_BASE_URL=/api) e o backend
+# real é resolvido em runtime pelo Nginx (BACKEND_URL).
+.env
+.env.local
+.env.*.local
+*.log
+.vscode
+.idea
+.DS_Store
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+ENTREGA-FRONTEND.md
