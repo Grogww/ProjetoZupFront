@@ -10,6 +10,28 @@ O front foi adequado para falar com o contrato real dessa API (status, taxonomia
 
 ---
 
+## 📚 Documentação (para avaliação)
+
+A documentação completa do projeto — **regras de negócio, requisitos, plano de projeto, perfis e
+permissões, contrato de API, modelo de dados e diagramas** — está organizada na pasta
+**[`docs/`](docs/README.md)**.
+
+> 👉 **Comece pelo índice: [`docs/README.md`](docs/README.md).**
+
+| Documento | Conteúdo |
+| --- | --- |
+| [1. Regras de Negócio](docs/01-regras-de-negocio.md) | Geofencing, duplicidade, validação comunitária, máquina de estados, reincidência |
+| [2. Requisitos (RF/RNF)](docs/02-requisitos.md) | Funcionais e não funcionais, com rastreabilidade ao código |
+| [3. Plano de Projeto](docs/03-plano-de-projeto.md) | Escopo, cronograma, marcos, estado atual e roadmap |
+| [4. Perfis e Permissões](docs/04-perfis-e-permissoes.md) | Papéis e matriz Perfil × Ação |
+| [5. Backend & Contrato de API](docs/05-backend-contrato.md) | Endpoints consumidos, auth, variáveis e decisões técnicas |
+| [6. Técnica do Frontend](docs/06-frontend.md) | Componentes, rotas, estado, mapa e identidade visual |
+| [7. Modelo de Dados](docs/07-modelo-de-dados.md) | ER do contrato e decisões geoespaciais |
+| [8. Diagramas](docs/08-diagramas.md) | Casos de uso, ER, estados, sequência e arquitetura |
+| [9. Como rodar](docs/09-como-rodar.md) | Pré-requisitos, `.env`, Docker e Swagger |
+
+---
+
 ## ✨ Funcionalidades
 
 - **Mapa interativo** (Leaflet + react-leaflet) com as ocorrências georreferenciadas, mapa de calor (`leaflet.heat`), legenda por status e contorno real dos bairros via GeoJSON.
