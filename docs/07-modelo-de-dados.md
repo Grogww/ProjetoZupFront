@@ -145,10 +145,20 @@ adicionando rótulos, cores, nome do bairro e órgão derivado. `Report.priority
   (409) — cálculo de distância (`ST_DWithin`/`geography`) **no backend**.
 - **Heatmap.** `GET /analytics/heatmap` devolve `{ lat, lng, weight }` já prontos para `leaflet.heat`.
 
-> ⚠️ A confirmar (decisões de banco, lado backend): **SRID** efetivo e reprojeção (ex.: **SIRGAS
-> 2000 → WGS84**), uso de `geometry` vs. `geography`, índices espaciais (GiST), e geração do ponto
-> central (`ST_PointOnSurface` vs. `ST_Centroid`). Não são visíveis no contrato consumido pelo
-> front — documentar no repositório do backend.
+> ✅ **Confirmado no back (2026-06-16):**
+> - **SRID 4326 (WGS84)** uniforme, em colunas **tipadas**: `occurrences.location
+>   geometry(Point,4326)`, `neighborhoods.boundary geometry(MultiPolygon,4326)`,
+>   `neighborhoods.center_point geometry(Point,4326)`.
+> - **`geometry` para armazenamento/filtro** (`ST_Contains`) e **cast `::geography`** só para
+>   distância real em metros (`ST_DWithin`/`ST_Distance` em `occurrencesModel.findNearby`).
+> - **Índices GiST confirmados no DDL:** `idx_occurrences_location`, `idx_neighborhoods_boundary`,
+>   `idx_neighborhoods_center` (+ btree em `status`/`category_id`/`neighborhood_id`/`created_at`).
+>
+> ⚠️ A confirmar (pendências do back, fora deste repo): **(1)** a **reprojeção SIRGAS 2000
+> (EPSG:4674) → WGS84** do ETL de importação dos bairros — os dados já chegam em 4326 no banco, mas
+> o SRID de origem e o passo de `ST_Transform` não estão versionados; **(2)** se o `center_point`
+> foi gerado por **`ST_PointOnSurface`** (ponto garantido dentro do polígono) ou **`ST_Centroid`**.
+> Ambas seguem em aberto **também no backend** (o seed vem de um backup binário).
 
 ## 7.4 Integridade referencial
 
@@ -157,6 +167,13 @@ adicionando rótulos, cores, nome do bairro e órgão derivado. `Report.priority
 - O front **tolera nulos** nessas FKs (campos opcionais em `Report`; bairro/órgão caem em vazio /
   "Não atribuído").
 
-> ⚠️ A confirmar (lado backend): comportamento de FKs sensíveis — em especial **`ON DELETE SET
-> NULL` em `neighborhood_id`** — e a recomendação de que **reimportações da malha de bairros sejam
-> aditivas** para não desvincular ocorrências existentes (ver RN-14).
+> ✅ **Confirmado no back (DDL):**
+> - `occurrences.neighborhood_id` → **`ON DELETE SET NULL`** (apagar bairro desvincula, não apaga a
+>   ocorrência) — por isso **reimportações da malha de bairros devem ser aditivas** (ver RN-14).
+> - `occurrences.category_id` / `subcategory_id` → **`RESTRICT`** (não se apaga categoria em uso).
+> - `occurrence_media.*` → **`CASCADE`** (mídia some com a ocorrência; os bytes em disco são
+>   limpos pelo serviço).
+> - **`neighborhood_adjacency`** existe (PK `(neighborhood_id, neighbor_id)`, CHECK de
+>   não-reflexividade, FKs `ON DELETE CASCADE`) — **modelado, mas ainda não usado por código**.
+> - `occurrence_reopens.new_occurrence_id` é **único** (cada ocorrência só pode ser fruto de uma
+>   reabertura).

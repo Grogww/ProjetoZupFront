@@ -69,11 +69,13 @@ Arquivos: [`../Dockerfile`](../Dockerfile), [`../nginx.conf`](../nginx.conf),
 
 ## 9.5 Documentação Swagger / OpenAPI
 
-A documentação interativa de API é servida pelo **backend** (não pelo front). Com o backend
-rodando, acesse o Swagger do ProjetoZup.
-
-> ⚠️ A confirmar: a rota exata do Swagger no backend (comumente `http://localhost:3000/api-docs`).
-> Verificar no repositório do backend.
+> ✅ **Verificado no backend (2026-06-16):** **não há Swagger UI servido em runtime** — o `app.js`
+> não monta `swagger-ui`, e o `package.json` do back não tem dependência de swagger. O contrato
+> existe como **arquivo estático `openapi.json`** na **raiz do repositório do backend**.
+>
+> Para visualizar a documentação interativa, importe esse `openapi.json` em uma ferramenta:
+> [Swagger Editor](https://editor.swagger.io/), Redoc ou Postman/Insomnia. Não existe um endpoint
+> `/api-docs` ativo.
 
 ## 9.6 Banco de dados / seed
 

@@ -35,14 +35,16 @@
 | RF-25 | Gestão de usuários (admin) | Admin | Lista usuários do sistema | `AdminPanel.tsx`, `listUsers` → `GET /users` |
 | RF-26 | Taxonomia viva (categorias/bairros/órgãos) | Sistema | Categorias, subcategorias, bairros e órgãos vêm da API (não hardcoded) | `useTaxonomy.ts` |
 
-> ⚠️ A confirmar (RF-11/RF-13/RF-14): a **autorização por papel** dessas ações é do backend. Hoje
-> o front aplica gating cosmético (esconde controles para não-institucionais); `PATCH
-> /occurrences/:id/status` ainda não restringe papel no servidor (ver
-> [01-regras-de-negocio.md](01-regras-de-negocio.md), RN-05/RN-06).
+> ✅ **Confirmado no back (RF-11/RF-13/RF-14):** nenhuma dessas rotas usa `requireRole` — só `auth`.
+> `PATCH /occurrences/:id/status`, `POST /occurrences/:id/reopen` e os votos
+> (`upvote`/`downvote`/`vote`) ficam abertos a **qualquer autenticado**. O gating do front é
+> cosmético; **a restrição por papel precisa ser adicionada no backend** (ver
+> [01-regras-de-negocio.md](01-regras-de-negocio.md), RN-05/RN-07). Edição/exclusão: a **edição**
+> exige autor/admin + janela de 24h; a **exclusão** hoje **não checa autor** (lacuna do back).
 
-> ⚠️ A confirmar (Notificações): **não há módulo de notificações** consumido pelo front hoje
-> (sem `notifications-api`). A "notificação" aparece apenas como rótulo/placeholder em painéis.
-> Requisito previsto no escopo, **pendente** de endpoint.
+> ✅ **Confirmado no back (Notificações):** **não há módulo de notificações no backend** (nenhum
+> endpoint/serviço). O requisito está **pendente dos dois lados** — é backlog do back antes de o
+> front poder consumi-lo.
 
 ## 2.2 Requisitos Não Funcionais (RNF)
 

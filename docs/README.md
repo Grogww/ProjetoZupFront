@@ -13,7 +13,13 @@ organizada para avaliação. O conteúdo foi extraído diretamente do código-fo
 > reflete e impõe na UI**, e referenciamos o backend para tudo que é servidor-side. Sempre que uma
 > regra depende de confirmação no backend, ela aparece marcada com `> ⚠️ A confirmar:`.
 
----
+> ✅ **Validação cruzada com o backend (2026-06-16).** O código do backend ProjetoZup foi revisado
+> (controllers, services, models, rotas e os docs do próprio back). A maioria dos pontos antes
+> "a confirmar" foi **resolvida** e aparece nos documentos como **✅ Confirmado no back**, com
+> referência ao arquivo. Permanecem em aberto apenas itens que **o próprio backend ainda não
+> implementou/documenta** (lógica de validador elegível; reprojeção SIRGAS 2000→WGS84 e geração do
+> `center_point`) e decisões do front/processo (troca de tiles; cronograma/equipe). O backend foi
+> clonado **fora** deste repositório (pasta irmã `../ProjetoZup-backend`, não versionada aqui).
 
 ## Índice
 
@@ -39,6 +45,12 @@ organizada para avaliação. O conteúdo foi extraído diretamente do código-fo
 - **`> ⚠️ A confirmar:`** marca pontos cuja decisão final mora no backend e ainda não está
   confirmada pelo contrato visível ao front.
 - **Referências de código** aparecem como `caminho/arquivo.ts` e, quando útil, `arquivo.ts:linha`.
+
+## Design / Protótipo
+
+- 🎨 **Figma — Projeto ZUP:** <https://www.figma.com/design/fB532mbV9oncYHSR0l7i8v/Projeto-ZUP?node-id=4-832&t=AWvNV7uY4aME6paB-0>
+  — referência visual (telas, fluxo e identidade) que orienta a implementação documentada em
+  [06-frontend.md](06-frontend.md).
 
 ## Documentos de apoio (já existentes na raiz)
 

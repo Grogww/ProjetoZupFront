@@ -22,10 +22,11 @@ O front trabalha com **5 papéis** (`AppRole` em `src/hooks/useAuth.tsx:5`):
 | `agent` | `prefeitura` | `prefeitura` |
 | `citizen` | `cidadao` | — |
 
-> ⚠️ A confirmar: o backend **não** diz a qual órgão um `agent` pertence (sem vínculo
-> agente→organização). Por isso **todo `agent` cai em `prefeitura`** por padrão. Os papéis
-> `agua_saneamento`/`energia_luz` existem no modelo do front, mas hoje **nenhum usuário real é
-> mapeado para eles** — dependem de o backend expor o órgão do agente.
+> ✅ **Confirmado no back:** o papel vem direto de `users.role` (`citizen|agent|admin`) no payload
+> do JWT (`auth.js`, `authService`), **sem vínculo agente→organização**. Por isso **todo `agent`
+> cai em `prefeitura`** no front. Os papéis `agua_saneamento`/`energia_luz` existem só no modelo de
+> UI e **nenhum usuário real é mapeado para eles** hoje — dependeriam de o back expor o órgão do
+> agente.
 
 ### Descrição dos perfis
 
@@ -35,8 +36,9 @@ O front trabalha com **5 papéis** (`AppRole` em `src/hooks/useAuth.tsx:5`):
 - **Validador (cidadão elegível).** **Não é um papel separado no contrato atual.** A "validação
   comunitária" acontece via **votos** de cidadãos e pelos estados `awaiting_validation`/`validated`.
   A elegibilidade (mesmo bairro/região) é regra do backend.
-  > ⚠️ A confirmar: não há, no front, papel ou flag de "validador". Se o backend promover cidadãos
-  > a validadores, esse critério precisa ser exposto e refletido aqui.
+  > ✅ **Confirmado no back:** **não há papel/flag de "validador"** nem no backend. Votar é livre
+  > para qualquer autenticado (exceto em ocorrência `closed`) e não muda status. A promoção a
+  > validador é backlog do back (ver 4.4).
 - **Órgão / Gestão (`prefeitura`, `agua_saneamento`, `energia_luz`).** Perfis **institucionais**:
   acessam painéis de gestão, alteram status operacional, reabrem ocorrências e veem dashboards.
 - **Administrador (`admin`).** Institucional com acesso total na UI; adicionalmente lista usuários
@@ -103,7 +105,10 @@ flowchart TD
 
 ## 4.4 Critério de elegibilidade do validador
 
-> ⚠️ A confirmar: a promoção de um cidadão a **validador elegível** (ex.: residir no mesmo bairro /
-> região da ocorrência, possivelmente via `neighborhood_adjacency`) é **regra do backend** e **não
-> está implementada nem exposta ao front**. O front associa o usuário a um bairro
-> (`neighborhood_id` no cadastro/perfil), o que pode servir de base para essa regra no servidor.
+✅ **Confirmado no back:** a tabela **`neighborhood_adjacency` existe no schema** (PK composta
+`(neighborhood_id, neighbor_id)`, CHECK de não-reflexividade, FKs `ON DELETE CASCADE`) — é a base
+reservada para a elegibilidade por bairro/adjacência — mas **nenhum código a usa ainda**. O usuário
+já é associado a um bairro (`neighborhood_id` no cadastro/perfil), insumo dessa futura regra.
+
+> ⚠️ A confirmar (pendente no backend): a **lógica** de promoção a validador elegível e de seleção
+> por adjacência ainda **não foi implementada** no servidor — está no backlog do back, não do front.

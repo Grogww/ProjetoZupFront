@@ -84,8 +84,11 @@ Toda chamada passa por `src/lib/api.ts`:
 ## 5.3 Autenticação/autorização
 
 - **Atual.** Login real por **CPF + senha** → **JWT** (`access_token` + `refresh_token`), guardados
-  em `localStorage`. Refresh automático em 401. Não há mais "mock auth" no caminho consumido pelo
-  front.
+  em `localStorage`. Refresh automático em 401.
+- **Mock auth (confirmado no back).** O back tem um modo mock ativado **só** pela env
+  `USE_MOCK_AUTH=true` (`middlewares/auth.js`); por padrão (e sem essa env no `.env.example`) roda
+  **JWT real**. Token expira conforme `JWT_EXPIRES_IN` (ex.: `3h`) e refresh conforme
+  `JWT_REFRESH_EXPIRES_IN` (`7d`).
 - **Transição preparada.** `normalizeSession()` aceita resposta com ou sem envelope `session`;
   `doRefresh()` aceita `access_token` direto ou sob `session`. Isso torna o front tolerante a
   pequenas variações do contrato de auth.
@@ -93,8 +96,12 @@ Toda chamada passa por `src/lib/api.ts`:
   [04-perfis-e-permissoes.md](04-perfis-e-permissoes.md)). A autorização **definitiva** é do
   backend.
 
-> ⚠️ A confirmar: o backend ainda **não** aplica `requireRole` em `PATCH /occurrences/:id/status`
-> (e possivelmente outras rotas sensíveis). Endurecer no servidor.
+> ✅ **Confirmado no back (2026-06-16):** existe o middleware `requireRole`, mas **as rotas de
+> ocorrência não o usam** — `occurrenceRoutes.js` aplica apenas `auth` em `POST /occurrences`,
+> `PATCH /occurrences/:id`, `PATCH /occurrences/:id/status`, `DELETE /occurrences/:id`, `POST
+> /occurrences/:id/reopen` e nas mídias. Restrições reais existem só em camada de serviço para
+> **editar** (autor/admin + janela 24h) — **não** para mudar status, reabrir nem **excluir**
+> (exclusão sem checagem de autor é uma lacuna). Endurecer com `requireRole` no servidor.
 
 ## 5.4 Variáveis de ambiente
 
