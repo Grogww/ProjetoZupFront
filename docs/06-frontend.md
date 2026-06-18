@@ -1,10 +1,9 @@
 # 6. Documentação Técnica do Frontend
 
-> Este é o **repositório do frontend ZUP X** (React + Vite + TypeScript). A **fonte da verdade**
-> das regras de negócio é o **backend ProjetoZup** (<https://github.com/Grogww/ProjetoZup>). As
-> regras e os requisitos já estão documentados em [01-regras-de-negocio.md](01-regras-de-negocio.md)
-> e [02-requisitos.md](02-requisitos.md); **esta seção foca a aplicação por dentro — estrutura,
-> telas e, sobretudo, a parte visual** (identidade, design system e UX).
+Esta seção descreve o frontend ZUP X por dentro — estrutura de código, telas e, em especial, a
+camada visual (identidade, design system e UX). As regras de negócio e os requisitos têm tratamento
+próprio em [01-regras-de-negocio.md](01-regras-de-negocio.md) e [02-requisitos.md](02-requisitos.md),
+e são definidos pela API ProjetoZup que a aplicação consome.
 
 ## 6.1 Stack
 
@@ -134,16 +133,16 @@ flowchart LR
 
 ## 6.7 Camada de mapa (Leaflet/OSM)
 
-- **Tiles:** OSM público (`OSM_URL` em `MapView.tsx:85`; URL equivalente em `Dashboard.tsx:65`).
-  > ⚠️ A confirmar: **trocar o provedor de tiles antes de produção** (política de uso do OSM).
+- **Tiles:** servidor público do OpenStreetMap (`OSM_URL` em `MapView.tsx:85`; URL equivalente em
+  `Dashboard.tsx:65`), adequado a desenvolvimento e demonstração; um provedor com cota própria é
+  recomendado para uso em produção.
 - **Camadas:** marcadores de ocorrências (cor por status, `getStatusColor`), **contorno de bairros**
   (GeoJSON real via `useNeighborhoodBoundaries`, translúcido e `interactive: false` para o clique
   passar ao mapa) e **heatmap** (`leaflet.heat` no `Dashboard`).
 - **Registro por clique:** ao marcar o ponto, busca `nearby` (500 m) e mostra ocorrências próximas.
-  Bairro detectado por `/neighborhoods/locate`.
-  > 🔧 O aviso de duplicidade da UI exibe "7 m" (`DUPLICATE_RADIUS_METERS`), mas a regra real do
-  > back bloqueia em **500 m + mesma categoria + ocorrência aberta** — corrigir o texto
-  > (ver [01-regras-de-negocio.md](01-regras-de-negocio.md), RN-03).
+  Bairro detectado por `/neighborhoods/locate`. O bloqueio de duplicidade é aplicado pelo backend
+  (mesma categoria, ocorrência aberta, raio de 500 m — ver [01-regras-de-negocio.md](01-regras-de-negocio.md),
+  RN-03).
 - **CSS vendorizado:** `src/vendor/leaflet/leaflet.css` (cópia oficial) para evitar dependência de
   CDN.
 

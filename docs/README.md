@@ -3,23 +3,17 @@
 > **ZUP — Zeladoria Urbana Participativa** · Município de **Videira/SC**
 > Plataforma cívica para registro georreferenciado e acompanhamento de problemas urbanos.
 
-Esta pasta reúne a documentação de projeto do **frontend ZUP X** (React + Vite + TypeScript),
-organizada para avaliação. O conteúdo foi extraído diretamente do código-fonte deste repositório
-(`src/lib/`, `src/hooks/`, `src/components/`, `src/data/`, `src/pages/`).
+Esta pasta documenta o **frontend ZUP X** (React + Vite + TypeScript): a aplicação web que os
+cidadãos e os órgãos municipais usam para registrar e acompanhar ocorrências de zeladoria urbana.
+O conteúdo descreve a aplicação tal como ela existe no código (`src/lib/`, `src/hooks/`,
+`src/components/`, `src/data/`, `src/pages/`).
 
-> ⚠️ **Importante sobre o escopo deste repositório.** Este é **apenas o frontend**. A **fonte da
-> verdade** das regras de negócio é o **backend ProjetoZup** (Node/Express + PostgreSQL/PostGIS):
-> <https://github.com/Grogww/ProjetoZup>. Aqui documentamos as regras **como o front as consome,
-> reflete e impõe na UI**, e referenciamos o backend para tudo que é servidor-side. Sempre que uma
-> regra depende de confirmação no backend, ela aparece marcada com `> ⚠️ A confirmar:`.
-
-> ✅ **Validação cruzada com o backend (2026-06-16).** O código do backend ProjetoZup foi revisado
-> (controllers, services, models, rotas e os docs do próprio back). A maioria dos pontos antes
-> "a confirmar" foi **resolvida** e aparece nos documentos como **✅ Confirmado no back**, com
-> referência ao arquivo. Permanecem em aberto apenas itens que **o próprio backend ainda não
-> implementou/documenta** (lógica de validador elegível; reprojeção SIRGAS 2000→WGS84 e geração do
-> `center_point`) e decisões do front/processo (troca de tiles; cronograma/equipe). O backend foi
-> clonado **fora** deste repositório (pasta irmã `../ProjetoZup-backend`, não versionada aqui).
+As regras de negócio são definidas e validadas no **backend ProjetoZup** (Node/Express +
+PostgreSQL/PostGIS, <https://github.com/Grogww/ProjetoZup>), que é a API consumida por esta
+aplicação. A documentação aqui presente trata de como o frontend **implementa, reflete e aplica na
+interface** essas regras; o comportamento de servidor é descrito apenas na medida em que o cliente
+depende dele. Onde uma regra ainda não existe no backend, o texto indica a limitação de forma
+objetiva.
 
 ## Índice
 
@@ -42,8 +36,6 @@ organizada para avaliação. O conteúdo foi extraído diretamente do código-fo
 - **Idioma:** português. **Diagramas:** Mermaid.
 - **Identificadores:** `RN-` (regra de negócio), `RF-` (requisito funcional), `RNF-` (requisito não
   funcional) para rastreabilidade.
-- **`> ⚠️ A confirmar:`** marca pontos cuja decisão final mora no backend e ainda não está
-  confirmada pelo contrato visível ao front.
 - **Referências de código** aparecem como `caminho/arquivo.ts` e, quando útil, `arquivo.ts:linha`.
 
 ## Design / Protótipo

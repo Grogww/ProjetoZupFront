@@ -22,11 +22,10 @@ O front trabalha com **5 papéis** (`AppRole` em `src/hooks/useAuth.tsx:5`):
 | `agent` | `prefeitura` | `prefeitura` |
 | `citizen` | `cidadao` | — |
 
-> ✅ **Confirmado no back:** o papel vem direto de `users.role` (`citizen|agent|admin`) no payload
-> do JWT (`auth.js`, `authService`), **sem vínculo agente→organização**. Por isso **todo `agent`
-> cai em `prefeitura`** no front. Os papéis `agua_saneamento`/`energia_luz` existem só no modelo de
-> UI e **nenhum usuário real é mapeado para eles** hoje — dependeriam de o back expor o órgão do
-> agente.
+> No servidor, o papel vem direto de `users.role` (`citizen|agent|admin`) no payload do JWT
+> (`auth.js`, `authService`), sem vínculo agente→organização. Por isso todo `agent` cai em
+> `prefeitura` no front. Os papéis `agua_saneamento`/`energia_luz` existem apenas no modelo de UI e
+> nenhum usuário real é mapeado para eles hoje — dependeriam de o backend expor o órgão do agente.
 
 ### Descrição dos perfis
 
@@ -36,9 +35,9 @@ O front trabalha com **5 papéis** (`AppRole` em `src/hooks/useAuth.tsx:5`):
 - **Validador (cidadão elegível).** **Não é um papel separado no contrato atual.** A "validação
   comunitária" acontece via **votos** de cidadãos e pelos estados `awaiting_validation`/`validated`.
   A elegibilidade (mesmo bairro/região) é regra do backend.
-  > ✅ **Confirmado no back:** **não há papel/flag de "validador"** nem no backend. Votar é livre
-  > para qualquer autenticado (exceto em ocorrência `closed`) e não muda status. A promoção a
-  > validador é backlog do back (ver 4.4).
+  > No servidor não há papel nem flag de "validador". Votar é livre para qualquer usuário
+  > autenticado (exceto em ocorrência `closed`) e não altera o status. A promoção a validador é uma
+  > evolução prevista do backend (ver 4.4).
 - **Órgão / Gestão (`prefeitura`, `agua_saneamento`, `energia_luz`).** Perfis **institucionais**:
   acessam painéis de gestão, alteram status operacional, reabrem ocorrências e veem dashboards.
 - **Administrador (`admin`).** Institucional com acesso total na UI; adicionalmente lista usuários
@@ -71,10 +70,10 @@ controles de gestão.
 **Notas da matriz.**
 - A coluna "Validador" foi omitida de propósito: validação é por **voto de cidadão**, não papel
   (ver 4.1).
-- O ⚠️ em "Alterar status"/"Reabrir" indica que o controle é **escondido** no front para
-  não-institucionais (`StatusControl` retorna `null` — `StatusControl.tsx:69`), mas a rota
-  `PATCH /occurrences/:id/status` **não** restringe papel no backend hoje. **A restrição real
-  precisa ser feita no backend.**
+- O ⚠️ em "Alterar status"/"Reabrir" indica que o controle é escondido no front para
+  não-institucionais (`StatusControl` retorna `null` — `StatusControl.tsx:69`), enquanto a rota
+  `PATCH /occurrences/:id/status` não restringe papel no servidor. A restrição efetiva depende do
+  backend.
 
 ## 4.3 Como a autorização é aplicada (no front)
 
@@ -105,10 +104,9 @@ flowchart TD
 
 ## 4.4 Critério de elegibilidade do validador
 
-✅ **Confirmado no back:** a tabela **`neighborhood_adjacency` existe no schema** (PK composta
-`(neighborhood_id, neighbor_id)`, CHECK de não-reflexividade, FKs `ON DELETE CASCADE`) — é a base
-reservada para a elegibilidade por bairro/adjacência — mas **nenhum código a usa ainda**. O usuário
-já é associado a um bairro (`neighborhood_id` no cadastro/perfil), insumo dessa futura regra.
-
-> ⚠️ A confirmar (pendente no backend): a **lógica** de promoção a validador elegível e de seleção
-> por adjacência ainda **não foi implementada** no servidor — está no backlog do back, não do front.
+No servidor, a tabela `neighborhood_adjacency` existe no schema (PK composta
+`(neighborhood_id, neighbor_id)`, CHECK de não-reflexividade, FKs `ON DELETE CASCADE`) e é a base
+reservada para a elegibilidade por bairro/adjacência, mas nenhum código a utiliza ainda. O usuário
+já é associado a um bairro (`neighborhood_id` no cadastro/perfil), insumo dessa futura regra. A
+lógica de promoção a validador elegível e de seleção por adjacência permanece como evolução prevista
+do backend.

@@ -1,13 +1,10 @@
 # 1. Regras de Negócio
 
-> **Como ler.** Cada regra tem identificador (`RN-xx`), descrição, gatilho, comportamento e a
-> referência ao código que a implementa **no front**. A **fonte da verdade** das regras é o
-> backend ProjetoZup; aqui registramos como o front as **reflete, impõe na UI e consome via API**.
-> Pontos cuja validação real mora no servidor estão marcados com `> ⚠️ A confirmar:`.
->
-> ✅ **Validado contra o backend em 2026-06-16** (repo clonado em `../ProjetoZup-backend`). Os
-> blocos marcados com **✅ Confirmado no back** trazem a regra real do servidor, com referência ao
-> arquivo. Os poucos `> ⚠️ A confirmar:` restantes são itens que **nem o backend documenta** ainda.
+> **Como ler.** Cada regra traz um identificador (`RN-xx`), descrição, gatilho, comportamento e a
+> referência ao código que a implementa no front. As regras são definidas pela API ProjetoZup, que
+> esta aplicação consome; o texto descreve como a interface as reflete e aplica. Quando o
+> comportamento do servidor difere do que a UI sugere — ou quando uma regra ainda não existe no
+> backend — isso é apontado de forma objetiva ao final da regra correspondente.
 
 ## Índice de regras
 
@@ -53,11 +50,11 @@
   obtido em `GET /api/neighborhoods/:id` (a listagem não traz geometria).
   Ver `listNeighborhoodBoundaries()` em `neighborhoods-api.ts:53`.
 
-> ✅ **Confirmado no back** (`occurrencesService.createOccurrence`, `neighborhoodsModel.findByPoint`):
-> **não há bloqueio duro** de pontos fora do município. Quando o bairro não é informado, o back
-> deriva por `ST_Contains` (point-in-polygon, SRID 4326); se o ponto não cai em nenhum bairro,
-> `neighborhood_id` fica **null** e a ocorrência é **criada mesmo assim**. Ou seja, o geofencing é
-> usado para *resolver* o bairro, não para *recusar* a ocorrência.
+> **No servidor** (`occurrencesService.createOccurrence`, `neighborhoodsModel.findByPoint`) não há
+> bloqueio rígido de pontos fora do município. Quando o bairro não é informado, ele é derivado por
+> `ST_Contains` (point-in-polygon, SRID 4326); se o ponto não cai em nenhum bairro, `neighborhood_id`
+> fica nulo e a ocorrência é criada mesmo assim. O geofencing serve para resolver o bairro, não para
+> recusar a ocorrência.
 
 ## RN-03 — Prevenção de duplicidade por raio
 
@@ -69,16 +66,15 @@
   (`src/data/mockData.ts:123-124`).
 - **Código.** Tratamento do 409 em `CreateReportModal.tsx:159`.
 
-> ✅ **Confirmado no back** (`occurrencesService.js:12,110-125`): o raio de bloqueio é
-> **`ANTIDUPLICITY_RADIUS_M = 500`** (não 7). O critério de **bloqueio (409 `OCCURRENCE_DUPLICATE`)**
-> é cumulativo: existir ocorrência **dentro de 500 m** (`ST_DWithin` sobre `::geography`) **+ mesma
-> `category_id` + status não finalizado** (i.e. diferente de `resolved`/`closed`). O raio de
-> **aviso** (pré-visualização, RN-04) é o mesmo 500 m.
+> **No servidor** (`occurrencesService.js:12,110-125`), o raio de bloqueio é de 500 m
+> (`ANTIDUPLICITY_RADIUS_M`). O 409 `OCCURRENCE_DUPLICATE` é emitido quando existe outra ocorrência
+> dentro de 500 m (`ST_DWithin` sobre `::geography`), na mesma `category_id` e com status ainda não
+> finalizado (diferente de `resolved`/`closed`). O raio de aviso da pré-visualização (RN-04) é o
+> mesmo.
 >
-> 🔧 **Ajuste recomendado no front:** o texto da UI "verifica duplicidade no raio de
-> **{DUPLICATE_RADIUS_METERS}m**" (`CreateReportModal.tsx:280`) exibe **7 m**, o que é **incorreto**.
-> Deve dizer **500 m** (e idealmente mencionar "mesma categoria, ocorrência ainda aberta"). O
-> `DUPLICATE_RADIUS_METERS = 7` não corresponde a nenhuma regra real do back.
+> O texto exibido em `CreateReportModal.tsx:280` usa `DUPLICATE_RADIUS_METERS` (7 m), valor que não
+> corresponde ao critério aplicado pelo servidor (500 m, mesma categoria, ocorrência aberta). Trata-se
+> de uma divergência conhecida entre a mensagem da interface e a regra efetiva.
 
 ## RN-04 — Pré-visualização de ocorrências próximas
 
@@ -163,16 +159,13 @@ stateDiagram-v2
   pertencem à comunidade e os estados **em análise / em execução / resolvido** ao órgão. A UI de
   mudança de status (`StatusControl`) só é exibida para perfis institucionais.
 
-> ✅ **Confirmado no back** (`occurrenceRoutes.js:13`, `occurrencesController.updateStatus`,
-> `occurrencesService.STATUS_TRANSITIONS`): a tabela de transições do front é **espelho exato** da
-> do back. A rota `PATCH /occurrences/:id/status` usa **apenas o middleware `auth`, sem
-> `requireRole`** — **qualquer usuário autenticado** consegue mudar status (desde que a transição
-> seja válida; senão 409). Logo o gating do front é mesmo **apenas cosmético**. O back ainda
-> **define automaticamente** `resolved_at` (ao entrar em `resolved`) e `closed_at` (ao entrar em
-> `closed`) — `occurrencesModel.updateStatus`.
->
-> 🔧 **Recomendação (back):** adicionar `requireRole('agent','admin')` nessa rota para que a
-> restrição seja real, não só visual.
+> **No servidor** (`occurrenceRoutes.js:13`, `occurrencesController.updateStatus`,
+> `occurrencesService.STATUS_TRANSITIONS`), a tabela de transições espelha a do front. A rota
+> `PATCH /occurrences/:id/status` exige apenas autenticação (`auth`), sem `requireRole`: qualquer
+> usuário autenticado pode mudar o status desde que a transição seja válida (caso contrário, 409). A
+> restrição por perfil no front é, portanto, apenas visual; uma restrição efetiva por papel
+> (`agent`/`admin`) depende do backend. O servidor também define automaticamente `resolved_at` e
+> `closed_at` ao entrar nesses estados (`occurrencesModel.updateStatus`).
 
 ## RN-06 — Transições restritas e resposta 409
 
@@ -197,21 +190,19 @@ stateDiagram-v2
   - Ocorrências `closed` **não** aceitam voto (409).
 - **Código.** `src/lib/evaluations-api.ts`.
 
-> ✅ **Confirmado no back** (`evaluationsService.js`, `occurrenceRoutes.js`): a "validação
-> comunitária" **gated** (elegibilidade + limiar de votos que avança o estado automaticamente)
-> **não existe nem no backend**. Hoje:
-> - **Votar é livre** para qualquer usuário autenticado (`POST /upvote`/`/downvote`); só é barrado
->   em ocorrência `closed` (409). **Não há checagem de bairro/elegibilidade.** O voto apenas
->   recalcula `upvote_count`/`downvote_count`/`score` — **não muda o status**.
-> - `awaiting_validation → validated` é uma **transição manual** de status (mesma rota
->   `PATCH /status`), não disparada por contagem de votos.
-> - A tabela **`neighborhood_adjacency` existe no schema** (PK `(neighborhood_id, neighbor_id)`,
->   CHECK de não-reflexividade, FKs `ON DELETE CASCADE`), mas **nenhum código a usa** — é a base
->   reservada para a futura seleção de validadores.
+> **No servidor** (`evaluationsService.js`, `occurrenceRoutes.js`), a validação comunitária com
+> elegibilidade e limiar de votos que avança o estado automaticamente ainda não existe. Hoje:
+> - votar é livre para qualquer usuário autenticado (`POST /upvote`/`/downvote`), barrado apenas em
+>   ocorrência `closed` (409); não há checagem de bairro ou elegibilidade. O voto recalcula
+>   `upvote_count`/`downvote_count`/`score`, mas não altera o status.
+> - `awaiting_validation → validated` é uma transição manual de status (mesma rota `PATCH /status`),
+>   não disparada por contagem de votos.
+> - a tabela `neighborhood_adjacency` existe no schema (PK `(neighborhood_id, neighbor_id)`, CHECK de
+>   não-reflexividade, FKs `ON DELETE CASCADE`), mas nenhum código a utiliza — é a base reservada
+>   para a futura seleção de validadores.
 >
-> ⚠️ A confirmar (pendente no backend, não no front): a **lógica de seleção/elegibilidade de
-> validadores** sobre `neighborhood_adjacency` e o **limiar de votos** ainda **não foram
-> implementados** no servidor (backlog do back).
+> A lógica de seleção/elegibilidade de validadores sobre `neighborhood_adjacency` e o limiar de
+> votos permanecem como evolução prevista do backend.
 
 ## RN-08 — Reincidência e reabertura
 
@@ -237,10 +228,10 @@ stateDiagram-v2
   agrega em estatísticas (`useValidationStats`).
 - **Código.** `evaluations-api.ts`; `score`/`upvotes`/`downvotes` em `mapOccurrenceToReport`.
 
-> ✅ **Confirmado no back:** **não existe campo `priority`** nem qualquer lógica de priorização por
-> votos no backend. O `score` (= upvotes − downvotes) é calculado e exposto, mas **não** ordena nem
-> prioriza tratamento. O front fixa `priority: "media"` (`occurrences-api.ts:133`) e mantém o enum
-> `Priority` apenas como estrutura de UI. **Priorização é backlog do back**, se entrar no escopo.
+> **No servidor** não existe campo `priority` nem lógica de priorização por votos. O `score`
+> (upvotes − downvotes) é calculado e exposto, mas não ordena nem prioriza o tratamento. O front fixa
+> `priority: "media"` (`occurrences-api.ts:133`) e mantém o enum `Priority` apenas como estrutura de
+> UI. A priorização por votação é uma evolução prevista, caso entre no escopo.
 
 ## RN-10 — Janela de edição/exclusão pós-registro
 
@@ -251,18 +242,17 @@ stateDiagram-v2
 - **Código.** `CreateReportModal.tsx:154` e `:407`. Operações: `updateOccurrence` /
   `deleteOccurrence` (`occurrences-api.ts:213,227`).
 
-> ✅ **Confirmado no back** (`utils/occurrenceEditWindow.js`, `occurrencesService.updateOccurrence`):
-> a janela é de **24 horas** a partir de `created_at`, configurável por env
-> **`OCCURRENCE_EDIT_WINDOW_HOURS`** (default 24). Vale para **editar campos** (`PATCH
-> /occurrences/:id`) **e gerenciar mídias** (`POST`/`DELETE .../media`) — fora do prazo retorna
-> **403 `EDIT_WINDOW_EXPIRED`**. A **edição** ainda exige ser **autor ou admin** (403 `FORBIDDEN`
-> via `assertCanEdit`). O texto de "24h" da UI do front, portanto, está **correto** para edição.
+> **No servidor** (`utils/occurrenceEditWindow.js`, `occurrencesService.updateOccurrence`), a janela
+> é de 24 horas a partir de `created_at`, configurável por env `OCCURRENCE_EDIT_WINDOW_HOURS`
+> (default 24). Vale para editar campos (`PATCH /occurrences/:id`) e gerenciar mídias
+> (`POST`/`DELETE .../media`); fora do prazo, retorna 403 `EDIT_WINDOW_EXPIRED`. A edição também
+> exige ser autor ou admin (403 `FORBIDDEN` via `assertCanEdit`). O texto de "24h" da interface,
+> portanto, está correto para edição.
 >
-> ⚠️ **Lacuna de segurança no back (DELETE):** `DELETE /occurrences/:id`
-> (`occurrencesController.remove` → `occurrencesService.deleteOccurrence`) **não checa autor/admin
-> nem a janela de edição** — usa só `auth`. Ou seja, **qualquer usuário autenticado pode excluir
-> qualquer ocorrência** (só é barrado por FK, 409 `OCCURRENCE_IN_USE`). Recomenda-se aplicar
-> `assertCanEdit` + janela também no delete.
+> A exclusão (`DELETE /occurrences/:id`, `occurrencesController.remove`) usa apenas `auth`, sem
+> checagem de autor/admin nem da janela de edição: na prática, qualquer usuário autenticado pode
+> excluir uma ocorrência (barrada apenas por integridade referencial, 409 `OCCURRENCE_IN_USE`).
+> Aplicar a mesma verificação de autoria e janela ao delete é um ponto em aberto no backend.
 
 ## RN-11 — Mídia obrigatória no registro
 
@@ -287,15 +277,13 @@ stateDiagram-v2
 - **Código.** `CATEGORY_ORGAN_MAP`/`categoryOrganBySlug` em `mockData.ts:162`; órgãos reais em
   `useTaxonomy.ts` (`organizationName`, "Não atribuído" quando nulo).
 
-> ✅ **Confirmado no back:** o papel do usuário é só `citizen|agent|admin` (sem vínculo
-> agente→organização) e **não há vínculo categoria→organização**. O `assigned_organization_id` só
-> pode ser definido **na criação** (`occurrencesController.create` aceita o campo) e é **zerado na
-> reabertura** (re-triagem). **Não existe endpoint de atribuição/triagem** pós-criação: o `PATCH
-> /occurrences/:id` **não** permite alterar `assigned_organization_id`. Logo, hoje a derivação por
-> slug do front é, na prática, o único mecanismo de "órgão responsável" visível ao usuário.
->
-> 🔧 **Recomendação (back):** expor um endpoint de triagem (ex.: `PATCH
-> /occurrences/:id/assignment`) para atribuir/alterar o órgão após a criação.
+> **No servidor**, o papel do usuário é apenas `citizen|agent|admin` (sem vínculo agente→organização)
+> e não há vínculo categoria→organização. O `assigned_organization_id` só pode ser definido na
+> criação (`occurrencesController.create` aceita o campo) e é zerado na reabertura (re-triagem). Não
+> existe endpoint de atribuição/triagem pós-criação: o `PATCH /occurrences/:id` não permite alterar
+> `assigned_organization_id`. Por isso, hoje a derivação por slug feita no front é, na prática, o
+> único mecanismo de "órgão responsável" visível ao usuário. Um endpoint de triagem para
+> atribuir/alterar o órgão após a criação é uma evolução prevista do backend.
 
 ## RN-13 — Identidade do cidadão e anonimato
 
@@ -303,15 +291,11 @@ stateDiagram-v2
   publicação ("Sua identidade é protegida").
 - **Código.** Login por CPF em `auth-api.ts:45`; aviso de anonimato em `CreateReportModal.tsx:391`.
 
-> ✅ **Confirmado no back:** **não existe** flag `is_anonymous` nem campo equivalente; a ocorrência
-> **sempre** grava `author_id` (o controller exige usuário autenticado). Portanto, o "Anonimato
-> garantido" exibido na UI do front **não corresponde** a um anonimato real no dado — a autoria é
-> sempre registrada.
->
-> 🔧 **Ajuste recomendado no front:** rever o texto "Anonimato garantido"
-> (`CreateReportModal.tsx:391`) para não prometer algo que o back não entrega (ex.: trocar por
-> "Seus dados pessoais não aparecem publicamente na ocorrência", se for o caso) — ou alinhar com o
-> back se um modo anônimo for desejado.
+> **No servidor** não existe flag `is_anonymous` nem campo equivalente: a ocorrência sempre grava
+> `author_id` (o controller exige usuário autenticado). O texto "Anonimato garantido" exibido na
+> interface (`CreateReportModal.tsx:391`), portanto, não corresponde a um anonimato no dado — a
+> autoria é sempre registrada. Alinhar essa mensagem ao comportamento real (por exemplo, indicando
+> que os dados pessoais não aparecem publicamente na ocorrência) é uma divergência conhecida.
 
 ## RN-14 — Integridade referencial de bairros
 
@@ -320,11 +304,10 @@ stateDiagram-v2
 - **Reflexo no front.** O front tolera `neighborhood_id` nulo (campo opcional em `Report`,
   resolvido para nome pela taxonomia; cai em vazio quando ausente).
 
-> ✅ **Confirmado no back** (DDL / docs do backend): `occurrences.neighborhood_id` é
-> **`ON DELETE SET NULL`** — apagar um bairro **desvincula** as ocorrências (não as apaga), o que
-> torna a regra de **reimportar bairros de forma aditiva** essencial para não perder o vínculo.
-> Para contraste, `category_id`/`subcategory_id` são **`RESTRICT`** e as mídias são **CASCADE**.
-> Ver [07-modelo-de-dados.md](07-modelo-de-dados.md).
+> **No servidor**, `occurrences.neighborhood_id` usa `ON DELETE SET NULL`: apagar um bairro
+> desvincula as ocorrências em vez de removê-las, o que torna essencial reimportar a malha de bairros
+> de forma aditiva para não perder o vínculo. Em contraste, `category_id`/`subcategory_id` usam
+> `RESTRICT` e as mídias usam `CASCADE`. Ver [07-modelo-de-dados.md](07-modelo-de-dados.md).
 
 ## RN-15 — Validação de CPF na entrada
 

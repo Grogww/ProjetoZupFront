@@ -96,12 +96,12 @@ Toda chamada passa por `src/lib/api.ts`:
   [04-perfis-e-permissoes.md](04-perfis-e-permissoes.md)). A autorização **definitiva** é do
   backend.
 
-> ✅ **Confirmado no back (2026-06-16):** existe o middleware `requireRole`, mas **as rotas de
-> ocorrência não o usam** — `occurrenceRoutes.js` aplica apenas `auth` em `POST /occurrences`,
-> `PATCH /occurrences/:id`, `PATCH /occurrences/:id/status`, `DELETE /occurrences/:id`, `POST
-> /occurrences/:id/reopen` e nas mídias. Restrições reais existem só em camada de serviço para
-> **editar** (autor/admin + janela 24h) — **não** para mudar status, reabrir nem **excluir**
-> (exclusão sem checagem de autor é uma lacuna). Endurecer com `requireRole` no servidor.
+> No servidor existe o middleware `requireRole`, mas as rotas de ocorrência não o aplicam:
+> `occurrenceRoutes.js` usa apenas `auth` em `POST /occurrences`, `PATCH /occurrences/:id`,
+> `PATCH /occurrences/:id/status`, `DELETE /occurrences/:id`, `POST /occurrences/:id/reopen` e nas
+> mídias. As restrições efetivas ficam na camada de serviço apenas para edição (autor/admin + janela
+> de 24h); mudar status, reabrir e excluir não passam por essa verificação. Aplicar `requireRole` a
+> essas rotas é um ponto em aberto no backend.
 
 ## 5.4 Variáveis de ambiente
 

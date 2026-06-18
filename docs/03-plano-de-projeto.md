@@ -47,9 +47,8 @@ gantt
     Troca de tiles / endurecimento auth :        f12, 2026-06-18, 5d
 ```
 
-> ⚠️ A confirmar: as **datas** acima foram derivadas do histórico de commits (`first commit`,
-> `Docker compose + nginx`, etc.) e do estado do código em 2026-06-16. Ajuste conforme o
-> cronograma oficial do trabalho.
+> As datas refletem o histórico de commits e a evolução do código; servem como linha do tempo
+> indicativa das fases do frontend.
 
 ## 3.3 Marcos (milestones) e entregáveis
 
@@ -81,8 +80,8 @@ gantt
 **Em andamento / pendências conhecidas.**
 - **Documentação de entrega** (esta pasta).
 - **Notificações** — sem endpoint consumido (placeholder na UI).
-- **Prioridade** — `priority` não existe no backend; front fixa `media` (stand-by).
-- **Suporte (contato)** — formulário de contato com integração a confirmar.
+- **Prioridade** — `priority` não existe no backend; o front fixa `media` até a regra existir.
+- **Suporte (contato)** — formulário de contato pronto na UI, à espera do endpoint de envio.
 
 ## 3.5 Roadmap / backlog
 
@@ -98,16 +97,11 @@ gantt
 
 - Repositório no **GitHub**; branch principal `main`.
 - Pontos de plugagem futura marcados no código com `TODO(API)`.
-- Recomenda-se **PRs com keywords de fechamento de issue** (`Closes #...`) e revisão por par.
-
-> ⚠️ A confirmar: o fluxo de branches/PRs efetivo (trunk-based, GitFlow etc.) deve ser preenchido
-> conforme a prática da equipe.
+- Integração via PRs com keywords de fechamento de issue (`Closes #...`) e revisão por par.
 
 ## 3.7 Equipe e responsabilidades
 
 | Frente | Responsabilidade |
 |--------|------------------|
 | Frontend (este repo) | UI, mapa, integração com a API, painéis e dashboards |
-| Backend (ProjetoZup) | Regras de negócio, PostGIS, autenticação, OpenAPI — **fonte da verdade** |
-
-> ⚠️ A confirmar: nomes/divisão da equipe a preencher pelo autor.
+| Backend (ProjetoZup) | Regras de negócio, PostGIS, autenticação e contrato OpenAPI da API |

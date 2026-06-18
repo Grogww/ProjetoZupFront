@@ -1,8 +1,8 @@
 # 2. Requisitos Funcionais e Não Funcionais
 
 > Requisitos com identificadores para rastreabilidade. A coluna **"Implementado em"** liga cada
-> requisito ao módulo/endpoint do **front** que o realiza. Itens que dependem de servidor estão
-> marcados com `> ⚠️ A confirmar:`.
+> requisito ao módulo/endpoint do front que o realiza. Os comentários ao final de cada bloco
+> registram, quando pertinente, o comportamento correspondente no servidor.
 
 ## 2.1 Requisitos Funcionais (RF)
 
@@ -35,16 +35,15 @@
 | RF-25 | Gestão de usuários (admin) | Admin | Lista usuários do sistema | `AdminPanel.tsx`, `listUsers` → `GET /users` |
 | RF-26 | Taxonomia viva (categorias/bairros/órgãos) | Sistema | Categorias, subcategorias, bairros e órgãos vêm da API (não hardcoded) | `useTaxonomy.ts` |
 
-> ✅ **Confirmado no back (RF-11/RF-13/RF-14):** nenhuma dessas rotas usa `requireRole` — só `auth`.
+> **Sobre RF-11/RF-13/RF-14:** no servidor, nenhuma dessas rotas usa `requireRole` — apenas `auth`.
 > `PATCH /occurrences/:id/status`, `POST /occurrences/:id/reopen` e os votos
-> (`upvote`/`downvote`/`vote`) ficam abertos a **qualquer autenticado**. O gating do front é
-> cosmético; **a restrição por papel precisa ser adicionada no backend** (ver
-> [01-regras-de-negocio.md](01-regras-de-negocio.md), RN-05/RN-07). Edição/exclusão: a **edição**
-> exige autor/admin + janela de 24h; a **exclusão** hoje **não checa autor** (lacuna do back).
+> (`upvote`/`downvote`/`vote`) ficam abertos a qualquer usuário autenticado. A restrição por perfil
+> no front é apenas visual; uma restrição efetiva por papel depende do backend (ver
+> [01-regras-de-negocio.md](01-regras-de-negocio.md), RN-05/RN-07). Na edição/exclusão, a edição
+> exige autor/admin e respeita a janela de 24h; a exclusão ainda não verifica o autor.
 
-> ✅ **Confirmado no back (Notificações):** **não há módulo de notificações no backend** (nenhum
-> endpoint/serviço). O requisito está **pendente dos dois lados** — é backlog do back antes de o
-> front poder consumi-lo.
+> **Notificações:** o backend não expõe módulo de notificações (nenhum endpoint ou serviço). O
+> requisito depende de implementação no servidor antes de o front poder consumi-lo.
 
 ## 2.2 Requisitos Não Funcionais (RNF)
 
@@ -63,9 +62,9 @@
 | RNF-11 | Portabilidade/custo | Ferramentas abertas | **OpenStreetMap** (tiles), Leaflet, React/Vite — sem custo de licença |
 | RNF-12 | Portabilidade | Configuração por ambiente | `VITE_API_BASE_URL` (nunca URL fixa); container desacoplado via Nginx + `BACKEND_URL` |
 | RNF-13 | Manutenibilidade | Camada de integração isolada | `src/lib/*-api.ts` por domínio; hooks (`src/hooks/`) estabilizam o shape para a UI |
-| RNF-14 | Manutenibilidade | Documentação de API | Contrato alinhado ao **OpenAPI/Swagger** do backend (referência da fonte da verdade) |
+| RNF-14 | Manutenibilidade | Documentação de API | Contrato alinhado ao **OpenAPI/Swagger** do backend |
 | RNF-15 | Confiabilidade | Tolerância a falhas de UI | `ErrorBoundary` global; falha de upload não perde a ocorrência |
 
-> ⚠️ A confirmar (RNF-11): os tiles usam o **servidor público do OSM**, aceitável **apenas para o
-> MVP**. A política de uso do OSM não permite tráfego de produção — **trocar o provedor de tiles
-> antes de produção** (`OSM_URL` em `MapView.tsx:85` e a URL em `Dashboard.tsx:65`).
+> **Sobre RNF-11:** os tiles usam o servidor público do OpenStreetMap (`OSM_URL` em `MapView.tsx:85`
+> e a URL em `Dashboard.tsx:65`), adequado a desenvolvimento e demonstração. Para tráfego de
+> produção, recomenda-se um provedor de tiles com cota própria, conforme a política de uso do OSM.
