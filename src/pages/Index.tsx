@@ -7,13 +7,32 @@ import { MapPin, Users, BarChart3, Shield, CheckCircle2, ArrowRight, Building2, 
 import { motion } from "framer-motion";
 import zupLogo from "@/assets/zup-logo.png";
 import HeroCarousel from "@/components/HeroCarousel";
+import { useAnalyticsOverview } from "@/hooks/useStats";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }),
 };
 
+const fmt = (n: number) => n.toLocaleString("pt-BR");
+
 const Index = () => {
+  // KPIs reais via GET /api/analytics/overview (público). Enquanto carrega ou
+  // se o back não responder, mostra "—" no lugar de números inventados.
+  const overview = useAnalyticsOverview();
+  const stat = (ready: boolean, value: string) =>
+    overview.isLoading || overview.isError || !ready ? "—" : value;
+
+  const stats = [
+    { value: stat(true, fmt(overview.total)), label: "Ocorrências registradas" },
+    { value: stat(true, fmt(overview.resolved)), label: "Problemas resolvidos" },
+    {
+      value: stat(overview.avgResolutionDays > 0, `${fmt(overview.avgResolutionDays)} dias`),
+      label: "Tempo médio de resolução",
+    },
+    { value: stat(true, fmt(overview.activeNeighborhoods)), label: "Bairros ativos" },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Seo
@@ -62,12 +81,7 @@ const Index = () => {
       <section className="bg-card border-b border-border">
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              { value: '127', label: 'Ocorrências registradas' },
-              { value: '48', label: 'Problemas resolvidos' },
-              { value: '12.3 dias', label: 'Tempo médio de resolução' },
-              { value: '1.240', label: 'Cidadãos participando' },
-            ].map((stat, i) => (
+            {stats.map((stat, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
                 <div className="text-2xl md:text-3xl font-extrabold text-primary">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
