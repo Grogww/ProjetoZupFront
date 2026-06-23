@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import CitizenPanel from "./pages/CitizenPanel.tsx";
 import InstitutionalPanel from "./pages/InstitutionalPanel.tsx";
 import AdminPanel from "./pages/AdminPanel.tsx";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
               <Route path="/recuperar-senha" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/painel" element={<ProtectedRoute><CitizenPanel /></ProtectedRoute>} />
               <Route path="/institucional/:type" element={<ProtectedRoute requireInstitutional><InstitutionalPanel /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute requireInstitutional><AdminPanel /></ProtectedRoute>} />
